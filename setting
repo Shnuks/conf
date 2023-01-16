@@ -57,4 +57,41 @@
 # echo nameserver 77.88.8.8 > /etc/resolv.conf
 # apt-get update && apt-get install -y nginx
 
+------------SRV--------------
+# apt-get install -y dhcp-server
+# vim /etc/dhcp/dhcpd.conf
+    ddns-update-style none;
+    subnet 172.20.2.0 netmask 255.255.254.0 {
+            option routers                   172.20.2.1;
+            option subnet-mask               255.255.254.0;
+            option domain-name               Oaklet.org;
+            option domain-name -servers      172.20.0.100, 77.88.8.8;
+            
+            range dynamic-bootp 172.20.3.101 172.20.3.254;
+            default-lease-time 21600;
+            max-lease-time 43200;
+    
+}
+
+# vi /etc/sysconfig/dhcpd
+          enp0s3
+ 
+# systemctl enable --now dhcpd
+
+# apt-get install -y chrony
+# vim /etc/chorony.conf 
+      pool pool.ntp.org iburst
+      allow 172.20.0.0/24
+      allow 172.20.2.0/23
+# systemctl enable --now chronyd
+
+
+
+
+
+
+
+
+
+
 
