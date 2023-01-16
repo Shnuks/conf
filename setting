@@ -2,7 +2,7 @@
 # set system host-name FW
 
 # set interfaces ethernet eth 1 address 172.20.0.1/24
-# set interfaces ethernet eth 1 address 172.20.2.1/24
+# set interfaces ethernet eth 1 address 172.20.2.1/23
 
 # set nat source rule 1 outbound-interfaces eth0
 # set nat source rule 2 outbound-interfaces eth0
