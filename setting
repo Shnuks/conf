@@ -89,7 +89,211 @@
 ------------DC--FS--------------
 Start-Service W32Time
 w32tm /confug /manualpeerlist:172.20.3.100 /syncfromflags:manual /reliable:yes /update
-Restart-Service W32time
+# Restart-Service W32time
+
+------------CLI-W--------------
+# Net-NetFirewallRule -DisplayName "NTP" -Direction Inbound -LocalPort 123 -Protocol UDP -Action Allow
+# Start-Service w32time
+# w32tm /confug /manualpeerlist:172.20.3.100 /syncfromflags:manual /reliable:yes /update
+# Restart-Service W32time
+# Set-Service -Name W32time -StartupType Automatic
+
+------------CLI-L-------------
+# vim /etc/chrony.conf
+# pool 172.20.3.100 iburst
+# allow 172.20.2.0/23
+# systemctl restart chronyd.service
+
+------------FW-------------
+# set system ntp server 172.20.3.100
+    
+------------SRV-------------
+# chronyc clients
+
+------------FS-------------
+# diskpart
+# select disk (1-5)
+# attrib disk clear readonly
+# convert dynamic
+# create volume raid disk=1,2,3,4,5
+# select volume 0
+# assign letter=B
+# select volume=3
+# assign letter=D
+# format fs=ntfs
+
+------------CLI-W-------------
+# select volume 0
+# assign letter=B
+# \\FS.Okalet.org\share
+
+------------CLI-L-------------
+# apt-get install -y cifs-utils
+# mkdir /mnt/adminshare
+# chmod 777 /mnt/adminshare
+# echo //FS.Oaklet.org/share /mnt/adminshare cifs users,credentials=/etc/samba/sambacreds,file_mode=0777,dir_mode=0777 0 0 >> /etc/fstab
+# vim /etc/samba/sambacreds 
+  username=smb
+  password=P@ssw0rd
+# chmod 600 /etc/samba/sambacreds
+# chown root: /etc/samba/sambacreds
+# monunt -a
+# df -h
+
+------------SRV-------------
+# mkdir /var/ca
+# cd /var/ca
+# openssl req -newkey rsa:4096 -keyfrom PEM -keyout ca.key -x509 -days 3650 -outfrom PEM - out ca.cer
+   Common Name: Oaklet.org root CA
+# vim /etc/openssh/sshd_config
+     "Открыть вход под рутом"
+# systemct restar sshd.service
+
+------------FS-------------
+# scp root@172.20.3.100:/var/ca/ca.cer D:\opt\share
+
+------------CLI-R-------------
+# cp /mnt/adminshare/ca.cer /etc/pki/ca-trust/source/anchors/ && update-ca-trust
+# ip route add 172.20.0.0/24 via 200.100.100.100
+# ip route add 172.20.2.0/23 via 200.100.100.100
+# scp root@SRV.Oaklet.org:/var/ca/ca.cer /etc/pki/ca-trust/source/anchors/ && update-ca-trust
+
+------------SRV-------------
+# systemctl enable --now docker.service
+# cd /home/admin/docker
+# docket build -t app .
+# docker run --name app -p 80:5000 -d app
+# docker ps
+# docker run -d --restart unless-stopped app
+# docker update --restart unless-stopped app
+# docker update --restart unless-stopped $(docker ps -q)
+
+------------CLI-W-------------
+# Enable-BitLocker -MountPoint U: -PasswordProtector
+
+------------FW-------------
+# mkdir /etc/wireguard/keys
+# cd /etc/wireguard/keys
+# wg genkey | tee srv-sec.key | wg pubkey > srv-pub.key
+# wg genkey | tee cli-sec.key | wg pubkey > cli-pub.key
+
+# cat srv-sec.key cli-pub.key >> /etc/wireguard/wg0.conf
+# vi /etc/wireguard/wg0.conf
+  [Interface]
+  Address = <10.20.30.1/30>
+  ListenPort = <12345>
+  PrivateKey = <srv-sec.key>
+  
+  [Peer]
+  PublicKey = <cli-pub.key>
+  AllowdIPs = <10.20.30.0/30>
+  
+# firewall-cmd --permanent --add-port=12345/{tcp,udp}
+# firewall-cmd --reload
+  
+# systemctl enable --now wg-quick@wg0
+# wg show wg0
+# scp srv-pub.key cli-sec.key root@200.100.100.200:/tmp
+
+------------APP-V-------------
+# cd /tmp
+# apt-get update
+# apt-get install -y wireguard-tools
+
+# mkdir -p /etc/wireguard/keys
+# cat srv-pub.key cli-sec.key >> /etc/wireguard/wg0.conf
+# vi /etc/wireguard/wg0.conf
+  [Interface]
+  Address = 10.20.30.2/30
+  PrivateKey = <cli-sec.key>
+  
+  [Peer]
+  PublicKey = <srv-pub.key>
+  Endpoint = 200.100.100.100:12345
+  AllowdIPs = 10.20.30.0/30, 172.20.0.0/24, 172.20.2.0/23
+  PersistentKeepalive = 10
+  
+# firewall-cmd --permanent --add-port=<12345>/{tcp,udp}
+# firewall-cmd --reload
+
+# systemctl enable --now wg-quick@wg0
+# wg show wg0  
+
+
+------------APP-L-------------
+# mkdir -p /var/www/html
+# mv index1.html index.html
+# cp index.html /var/www/htmp
+# vim /etc/nginx/sites-available.d/default.conf
+    server {
+             listen 80 default_server;
+# ln -s /etc/nginx/sites-available.d/default.conf etc/nginx/sites-enabled.d/default.conf
+# nginx -t
+# systemctl restart nginx
+
+------------APP-R------------
+# mkdir -p /var/www/html
+# mv index2.html index.html
+# cp index.html /var/www/htmp
+# vim /etc/nginx/sites-available.d/default.conf
+    server {
+             listen 80 default_server;
+# ln -s /etc/nginx/sites-available.d/default.conf etc/nginx/sites-enabled.d/default.conf
+# nginx -t
+# systemctl restart nginx
+
+------------APP-V------------
+# mkdir cert
+# cd cert
+# openssl genrsa -out app.key 4096
+# openssl req -new -key app.key -out app.req -sha256
+    Common Name app.firs
+# scp app.req root@172.20.3.100:/var/ca
+
+------------SRV------------
+# cd /var/ca
+# openssl x509 -req -in app.req -CA ca.cer -CAkey ca.key -set_serial 100 -extrensions app -days 1460 -outform PEM -out app.cer -sha256
+
+------------APP-V------------
+# scp root@172.20.3.100:/var/ca/app.cer ./
+# mkdir -p /etc/pki/nginx/private
+# cp app.cer /etc/pki/nginx/
+# cp app.key /etc/pki/nginx/private
+# systemctl enable --now nginx
+# vim /etc/nginx/sites-available.d/proxy.conf
+    upstream backend {
+            server 10.116.0.20 fail_timeout=20;
+            server 10.116.0.30 fail_timeout=30;
+    }
+    
+    server {
+            listen 443 ssl default_server;
+            server_name app.first;
+            
+            ssl_certificate /etc/pki/nginx/app.cer;
+            ssl_certificate_key /etc/pki/nginx/private/app.key;
+            
+            location / {
+                    proxy_pass http://backend;
+            }
+    }
+    
+    server {
+            listen 80 default_server;
+            server_name app.first;
+            return  302 https://app.first;
+            
+# ln -s /etc/nginx/sites-available.d/proxy.conf /etc/nginx/sites-enabled.d/proxy.conf
+# nginx -t
+# systemctl restart nginx
+# firewall-cmd --permanent --add-service=/{http,https}
+# firewall-cmd --reload  
+    
+    
+    
+           
+
+
 
 
 
