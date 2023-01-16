@@ -64,8 +64,8 @@
     subnet 172.20.2.0 netmask 255.255.254.0 {
             option routers                   172.20.2.1;
             option subnet-mask               255.255.254.0;
-            option domain-name               Oaklet.org;
-            option domain-name -servers      172.20.0.100, 77.88.8.8;
+            option domain-name               "Oaklet.org";
+            option domain-name-servers      172.20.0.100, 77.88.8.8;
             
             range dynamic-bootp 172.20.3.101 172.20.3.254;
             default-lease-time 21600;
@@ -92,7 +92,7 @@ w32tm /confug /manualpeerlist:172.20.3.100 /syncfromflags:manual /reliable:yes /
 # Restart-Service W32time
 
 ------------CLI-W--------------
-# Net-NetFirewallRule -DisplayName "NTP" -Direction Inbound -LocalPort 123 -Protocol UDP -Action Allow
+# New-NetFirewallRule -DisplayName "NTP" -Direction Inbound -LocalPort 123 -Protocol UDP -Action Allow
 # Start-Service w32time
 # w32tm /confug /manualpeerlist:172.20.3.100 /syncfromflags:manual /reliable:yes /update
 # Restart-Service W32time
