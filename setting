@@ -282,7 +282,8 @@ w32tm /confug /manualpeerlist:172.20.3.100 /syncfromflags:manual /reliable:yes /
             listen 80 default_server;
             server_name app.first;
             return  302 https://app.first;
-            
+    }
+    
 # ln -s /etc/nginx/sites-available.d/proxy.conf /etc/nginx/sites-enabled.d/proxy.conf
 # nginx -t
 # systemctl restart nginx
