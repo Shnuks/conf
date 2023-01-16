@@ -7,7 +7,7 @@
 # set nat source rule 1 outbound-interfaces eth0
 # set nat source rule 2 outbound-interfaces eth0
 # set nat source rule 1 source address 172.20.0.0/24
-# set nat source rule 2 source address 172.20.2.0/24
+# set nat source rule 2 source address 172.20.2.0/23
 # set nat source rule 1 translation address masquerade
 # set nat source rule 2 translation address masquerade
 
