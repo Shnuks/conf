@@ -47,6 +47,7 @@
 # ip link set up enp0s3
 # echo nameserver 77.88.8.8 > /etc/resolv.conf
 # apt-get update && apt-get install -y nginx
+
 ------------APP-R--------------
 # hostnamectl set-hostname APP-R
 # echo 10.116.0.30/14 >> /etc/net/iface/enp0s3/ipv4address
@@ -55,6 +56,5 @@
 # ip link set up enp0s3
 # echo nameserver 77.88.8.8 > /etc/resolv.conf
 # apt-get update && apt-get install -y nginx
-
 
 
