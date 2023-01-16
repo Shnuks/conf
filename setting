@@ -86,6 +86,10 @@
 # systemctl enable --now chronyd
 
 
+------------DC--FS--------------
+Start-Service W32Time
+w32tm /confug /manualpeerlist:172.20.3.100 /syncfromflags:manual /reliable:yes /update
+Restart-Service W32time
 
 
 
